@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Búsqueda Avanzada | Barbería T13</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <img src="/img/logo_black.jpg" class="nav-logo-icon" alt="Logo" style="border-radius: 50%;">
+            MEN'S
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">INICIO</a></li>
+            <li><a href="/busqueda.html" class="active">BÚSQUEDA</a></li>
+            <li><a href="/reservar.html">RESERVAR CITA</a></li>
+            <li><a href="/clientes.html">CLIENTES</a></li>
+            <li><a href="/citas.html">CITAS</a></li>
+            <li class="admin-only"><a href="/barberos.html">BARBEROS</a></li>
+            <li class="admin-only"><a href="/servicios.html">SERVICIOS</a></li>
+            <li class="admin-only"><a href="/sedes.html">SEDES</a></li>
+            <li><a href="#" id="btnLogout">SALIR</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Búsqueda y Reportes</h1>
+            <p>Consulta reportes detallados y estadísticas del negocio</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <!-- FILTROS -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">Seleccionar Reporte</div>
+            <div class="grid grid-3">
+                <div class="form-group">
+                    <label for="vistaSelect">Vista / Reporte</label>
+                    <select id="vistaSelect" class="form-control">
+
+                        <!-- Opciones generadas dinámicamente -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="fechaDesde">Desde (opcional)</label>
+                    <input type="date" id="fechaDesde" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="fechaHasta">Hasta (opcional)</label>
+                    <input type="date" id="fechaHasta" class="form-control">
+                </div>
+            </div>
+            <button id="btnBuscar" class="btn btn-primary">Buscar</button>
+        </div>
+
+        <!-- RESULTADOS -->
+        <div class="card">
+            <div class="card-header" id="tituloResultado">Resultados</div>
+            <div id="resultadosContainer">
+                <p style="color: #888; padding: 2rem; text-align: center;">Selecciona un reporte para ver los resultados
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Men's Barber. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+        // Verificar sesion
+        const session = JSON.parse(localStorage.getItem('barberia_session') || 'null');
+        if (!session) {
+            window.location.href = '/login.html';
+        }
+
+        // Ocultar opciones admin si es barbero
+        if (session.rol !== 'franquiciado') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
+        // Configuración completa de las 20 vistas
+        const vistasConfig = {
+            // BLOQUE 1: ANALISIS FINANCIERO (Solo Franquiciado)
+            'regalias': { endpoint: '/api/reportes/regalias', titulo: 'Reporte de Regalías Mensuales', categoria: 'Finanzas' },
+            'ciudades': { endpoint: '/api/reportes/ciudades', titulo: 'Ingresos por Ciudad', categoria: 'Finanzas' },
+            'ticket-promedio': { endpoint: '/api/reportes/ticket-promedio', titulo: 'Ticket Promedio por Sede', categoria: 'Finanzas' },
+            'sedes-bajo-rendimiento': { endpoint: '/api/reportes/sedes-bajo-rendimiento', titulo: 'Sedes de Bajo Rendimiento', categoria: 'Finanzas' },
+
+            // BLOQUE 2: PRODUCTIVIDAD OPERATIVA
+            'top-barberos': { endpoint: '/api/reportes/top-barberos', titulo: 'Top Barberos del Mes', categoria: 'Barberos y Personal' },
+            'eficiencia': { endpoint: '/api/reportes/eficiencia', titulo: 'Eficiencia de Citas', categoria: 'Barberos y Personal' },
+            'barberos-multifaceticos': { endpoint: '/api/reportes/barberos-multifaceticos', titulo: 'Barberos Multifacéticos', categoria: 'Barberos y Personal' },
+            'antiguedad-personal': { endpoint: '/api/reportes/antiguedad-personal', titulo: 'Antigüedad del Personal', categoria: 'Barberos y Personal' },
+
+            // BLOQUE 3: INTELIGENCIA DE CLIENTES
+            'clientes-vip': { endpoint: '/api/reportes/clientes-vip', titulo: 'Clientes VIP', categoria: 'Clientes' },
+            'clientes-recurrentes': { endpoint: '/api/reportes/clientes-recurrentes', titulo: 'Clientes Recurrentes', categoria: 'Clientes' },
+            'ultima-visita': { endpoint: '/api/reportes/ultima-visita', titulo: 'Última Visita (Riesgo de Abandono)', categoria: 'Clientes' },
+            'demografia': { endpoint: '/api/reportes/demografia', titulo: 'Distribución Demográfica', categoria: 'Clientes' },
+
+            // BLOQUE 4: ANALISIS DE SERVICIOS
+            'servicios-populares': { endpoint: '/api/reportes/servicios-populares', titulo: 'Servicios Más Populares', categoria: 'Servicios' },
+            'servicios-rentables': { endpoint: '/api/reportes/servicios-rentables', titulo: 'Servicios Más Rentables', categoria: 'Servicios' },
+            'citas-combinadas': { endpoint: '/api/reportes/citas-combinadas', titulo: 'Análisis de Citas Combinadas', categoria: 'Servicios' },
+
+            // BLOQUE 5: AUDITORIA Y CONTROL (Solo Franquiciado los sensibles)
+            'ventas-diarias': { endpoint: '/api/reportes/ventas-diarias', titulo: 'Resumen Diario de Ventas', categoria: 'Auditoría y Control' },
+            'picos-atencion': { endpoint: '/api/reportes/picos-atencion', titulo: 'Picos de Atención', categoria: 'Auditoría y Control' },
+            'citas-futuras': { endpoint: '/api/reportes/citas-futuras', titulo: 'Citas Futuras', categoria: 'Auditoría y Control' },
+            'perdidas': { endpoint: '/api/reportes/perdidas', titulo: 'Pérdidas por Cancelación', categoria: 'Auditoría y Control' },
+            'auditoria-precios': { endpoint: '/api/reportes/auditoria-precios', titulo: 'Auditoría de Precios', categoria: 'Auditoría y Control' }
+        };
+
+        // Vistas prohibidas para Barberos (7 Vistas)
+        const vistasExcluidasBarbero = [
+            'regalias',
+            'ciudades',
+            'ticket-promedio',
+            'sedes-bajo-rendimiento',
+            'ventas-diarias',
+            'perdidas',
+            'auditoria-precios'
+        ];
+
+        // Función para poblar el select dinámicamente
+        function poblarSelectVistas(rol) {
+            const select = document.getElementById('vistaSelect');
+            select.innerHTML = '<option value="">-- Seleccione un reporte --</option>';
+
+            const categorias = {};
+
+            // Agrupar vistas permitidas por categoría
+            for (const key in vistasConfig) {
+                if (rol !== 'franquiciado' && vistasExcluidasBarbero.includes(key)) {
+                    continue; // Saltar vistas prohibidas para barberos
+                }
+
+                const vista = vistasConfig[key];
+                if (!categorias[vista.categoria]) {
+                    categorias[vista.categoria] = [];
+                }
+                categorias[vista.categoria].push({ key, titulo: vista.titulo });
+            }
+
+            // Crear optgroups
+            for (const catNombre in categorias) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = catNombre;
+
+                categorias[catNombre].forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.key;
+                    option.textContent = item.titulo;
+                    optgroup.appendChild(option);
+                });
+
+                select.appendChild(optgroup);
+            }
+        }
+
+        // Inicializar
+        poblarSelectVistas(session.rol);
+
+        document.getElementById('btnBuscar').addEventListener('click', async () => {
+            const vistaKey = document.getElementById('vistaSelect').value;
+            if (!vistaKey) {
+                showAlert('Selecciona un reporte', 'warning');
+                return;
+            }
+
+            const config = vistasConfig[vistaKey];
+            document.getElementById('tituloResultado').textContent = config.titulo;
+
+            try {
+                const data = await fetchAPI(config.endpoint);
+
+                if (data.length === 0) {
+                    document.getElementById('resultadosContainer').innerHTML = '<p style="color: #888; padding: 2rem; text-align: center;">No hay datos para mostrar</p>';
+                    return;
+                }
+
+                // Generar tabla dinamica
+                const columns = Object.keys(data[0]);
+                let html = '<div class="table-container"><table><thead><tr>';
+                columns.forEach(col => {
+                    html += `<th>${col}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+
+                data.forEach(row => {
+                    html += '<tr>';
+                    columns.forEach(col => {
+                        let value = row[col];
+                        // Formatear fechas
+                        if (value && typeof value === 'string' && value.includes('T') && (value.includes(':') || value.length > 10)) {
+                            // Intento simplificado de detectar ISO date strings
+                            try {
+                                const dateObj = new Date(value);
+                                if (!isNaN(dateObj)) {
+                                    value = dateObj.toLocaleString('es-EC');
+                                }
+                            } catch (e) { }
+                        }
+                        // Formatear numeros como moneda si parece precio
+                        if (typeof value === 'number' && (col.toLowerCase().includes('precio') || col.toLowerCase().includes('total') || col.toLowerCase().includes('ingreso') || col.toLowerCase().includes('gasto') || col.toLowerCase().includes('venta'))) {
+                            value = '$' + value.toFixed(2);
+                        }
+                        // Porcentajes
+                        if (typeof value === 'number' && (col.includes('%'))) {
+                            value = value.toFixed(2) + '%';
+                        }
+                        html += `<td>${value !== null && value !== undefined ? value : '-'}</td>`;
+                    });
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table></div>';
+                html += `<p style="color: #888; padding: 1rem;">Total: ${data.length} registros</p>`;
+
+                document.getElementById('resultadosContainer').innerHTML = html;
+            } catch (error) {
+                showAlert('Error al cargar datos: ' + error.message, 'danger');
+            }
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('barberia_session');
+            window.location.href = '/login.html';
+        });
+    </script>
+</body>
+
+</html>

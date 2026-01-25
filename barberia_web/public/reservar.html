@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservar Cita | Barberia T13</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <img src="/img/logo_black.jpg" class="nav-logo-icon" alt="Logo" style="border-radius: 50%;">
+            MEN'S
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">INICIO</a></li>
+            <li><a href="/busqueda.html">BUSQUEDA</a></li>
+            <li><a href="/reservar.html" class="active">RESERVAR CITA</a></li>
+            <li><a href="/clientes.html">CLIENTES</a></li>
+            <li><a href="/citas.html">CITAS</a></li>
+            <li class="admin-only"><a href="/barberos.html">BARBEROS</a></li>
+            <li class="admin-only"><a href="/servicios.html">SERVICIOS</a></li>
+            <li class="admin-only"><a href="/sedes.html">SEDES</a></li>
+            <li><a href="#" id="btnLogout">SALIR</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Reservar Nueva Cita</h1>
+            <p>Utiliza el formulario para agendar tu cita con nosotros</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="grid grid-2">
+            <!-- FORMULARIO -->
+            <div class="card">
+                <div class="card-header">Datos de la Cita</div>
+                <form id="formCita">
+                    <div class="form-group">
+                        <label for="sede">Sede</label>
+                        <select id="sede" class="form-control" required>
+                            <option value="">Seleccione una sede...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="barbero">Barbero</label>
+                        <select id="barbero" class="form-control" required>
+                            <option value="">Seleccione un barbero...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cliente">Cliente</label>
+                        <select id="cliente" class="form-control" required>
+                            <option value="">Seleccione un cliente...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fechaHora">Fecha y Hora</label>
+                        <input type="datetime-local" id="fechaHora" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Servicios (Seleccione uno o mas)</label>
+                        <div id="serviciosContainer"
+                            style="max-height: 400px; overflow-y: auto; background: #2d2d2d; padding: 1rem; border-radius: 5px;">
+                            <div class="loader"></div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Confirmar Reserva
+                    </button>
+                </form>
+            </div>
+
+            <!-- RESUMEN -->
+            <!-- RESUMEN -->
+            <div class="card">
+                <div class="card-header">Citas Futuras</div>
+                <div id="citasFuturas" style="max-height: 850px; overflow-y: auto;">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLIENTE NUEVO -->
+        <div class="card" style="max-width: 500px; margin: 2rem auto; text-align: center;">
+            <div class="card-header">Cliente nuevo?</div>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">
+                Si el cliente no esta registrado, primero debes agregarlo en la seccion de Clientes.
+            </p>
+            <a href="/clientes.html" class="btn btn-outline">Ir a Clientes</a>
+        </div>
+    </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Men's Barber. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+        // Verificar sesion
+        const session = JSON.parse(localStorage.getItem('barberia_session') || 'null');
+        if (!session) {
+            window.location.href = '/login.html';
+        }
+
+        // Ocultar opciones admin si es barbero
+        if (session.rol !== 'franquiciado') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Disable past dates
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('fechaHora').min = now.toISOString().slice(0, 16);
+
+            // Cargar selectswsp
+            const sedes = await fetchAPI('/api/sedes');
+            document.getElementById('sede').innerHTML += sedes.map(s =>
+                `<option value="${s.SedeID}">${s.NombreSede} (${s.NombreCiudad})</option>`
+            ).join('');
+
+            const barberos = await fetchAPI('/api/barberos');
+            document.getElementById('barbero').innerHTML += barberos.map(b =>
+                `<option value="${b.BarberoID}" data-sede="${b.SedeID}">${b.Nombres} ${b.Apellidos} - ${b.NombreEspecialidad}</option>`
+            ).join('');
+
+            const clientes = await fetchAPI('/api/clientes');
+            document.getElementById('cliente').innerHTML += clientes.map(c =>
+                `<option value="${c.ClienteID}">${c.Nombres} ${c.Apellidos} (${c.Cedula || 'Sin cedula'})</option>`
+            ).join('');
+
+            const servicios = await fetchAPI('/api/servicios');
+            document.getElementById('serviciosContainer').innerHTML = servicios.map(s => `
+                <label style="display: block; padding: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="servicio" value="${s.ServicioID}">
+                    ${s.NombreServicio} - <span class="badge badge-gold">$${s.Precio}</span>
+                </label>
+            `).join('');
+
+            // Cargar citas futuras
+            const citasFuturas = await fetchAPI('/api/reportes/citas-futuras');
+            document.getElementById('citasFuturas').innerHTML = citasFuturas.length > 0
+                ? citasFuturas.map(c => `
+                    <div style="padding: 0.8rem; border-bottom: 1px solid #333;">
+                        <strong>${c.Cliente}</strong><br>
+                        <small style="color: #888;">${new Date(c.FechaHora).toLocaleString('es-EC')} - ${c['Barbero Asignado']}</small>
+                    </div>
+                `).join('')
+                : '<p style="color: #888;">No hay citas programadas</p>';
+
+            // Filtrar barberos por sede
+            document.getElementById('sede').addEventListener('change', (e) => {
+                const sedeID = e.target.value;
+                const barberoSelect = document.getElementById('barbero');
+                Array.from(barberoSelect.options).forEach(opt => {
+                    if (opt.value === '') return;
+                    opt.style.display = opt.dataset.sede === sedeID ? '' : 'none';
+                });
+                barberoSelect.value = '';
+            });
+        });
+
+        // Submit
+        document.getElementById('formCita').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const serviciosChecked = Array.from(document.querySelectorAll('input[name="servicio"]:checked')).map(cb => parseInt(cb.value));
+
+            if (serviciosChecked.length === 0) {
+                showAlert('Debes seleccionar al menos un servicio', 'danger');
+                return;
+            }
+
+            const data = {
+                SedeID: parseInt(document.getElementById('sede').value),
+                BarberoID: parseInt(document.getElementById('barbero').value),
+                ClienteID: parseInt(document.getElementById('cliente').value),
+                FechaHora: document.getElementById('fechaHora').value,
+                Servicios: serviciosChecked
+            };
+
+            try {
+                const result = await fetch('/api/citas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).then(r => r.json());
+
+                if (result.success) {
+                    showAlert(`Cita #${result.citaID} creada exitosamente`, 'success');
+                    document.getElementById('formCita').reset();
+                    location.reload();
+                } else {
+                    showAlert(result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error al crear cita: ' + error.message, 'danger');
+            }
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('barberia_session');
+            window.location.href = '/login.html';
+        });
+    </script>
+</body>
+
+</html>

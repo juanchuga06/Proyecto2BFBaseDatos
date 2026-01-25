@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Clientes | Barbería T13</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <img src="/img/logo_black.jpg" class="nav-logo-icon" alt="Logo" style="border-radius: 50%;">
+            MEN'S
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">INICIO</a></li>
+            <li><a href="/busqueda.html">BÚSQUEDA</a></li>
+            <li><a href="/reservar.html">RESERVAR CITA</a></li>
+            <li><a href="/clientes.html" class="active">CLIENTES</a></li>
+            <li><a href="/citas.html">CITAS</a></li>
+            <li class="admin-only"><a href="/barberos.html">BARBEROS</a></li>
+            <li class="admin-only"><a href="/servicios.html">SERVICIOS</a></li>
+            <li class="admin-only"><a href="/sedes.html">SEDES</a></li>
+            <li><a href="#" id="btnLogout">SALIR</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Gestión de Clientes</h1>
+            <p>Administra la base de datos de clientes</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="grid grid-2" id="clientesGrid">
+            <!-- FORMULARIO -->
+            <div class="card admin-only">
+                <div class="card-header">Nuevo Cliente</div>
+                <form id="formCliente">
+                    <div class="form-group">
+                        <label for="cedula">Cédula (10 dígitos)</label>
+                        <input type="text" id="cedula" class="form-control" required pattern="[0-9]{10}" maxlength="10"
+                            placeholder="1234567890">
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label for="nombres">Nombres</label>
+                            <input type="text" id="nombres" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="apellidos">Apellidos</label>
+                            <input type="text" id="apellidos" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telefono">Teléfono (10 dígitos, inicia con 0)</label>
+                        <input type="text" id="telefono" class="form-control" required pattern="0[0-9]{9}"
+                            maxlength="10" placeholder="0991234567">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" class="form-control" placeholder="cliente@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="direccion">Dirección</label>
+                        <input type="text" id="direccion" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sexo">Sexo</label>
+                        <select id="sexo" class="form-control" required>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Registrar Cliente
+                    </button>
+                </form>
+            </div>
+
+            <!-- LISTA DE CLIENTES -->
+            <div class="card">
+                <div class="card-header">Clientes Registrados</div>
+                <div id="listaClientes" style="max-height: 620px; overflow-y: auto;">
+                    <div class="loader"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Men's Barber. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+        // Verificar sesion
+        const session = JSON.parse(localStorage.getItem('barberia_session') || 'null');
+        if (!session) {
+            window.location.href = '/login.html';
+        }
+
+        // Ocultar opciones admin si es barbero
+        if (session.rol !== 'franquiciado') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+
+            // Layout adjustment for Barbero: Center the list and title
+            const grid = document.getElementById('clientesGrid');
+            grid.classList.remove('grid-2');
+            grid.style.maxWidth = '600px';
+            grid.style.margin = '0 auto';
+
+            // Center the page title as well
+            document.querySelector('.page-title').style.textAlign = 'center';
+            document.querySelector('.page-title p').style.margin = '0 auto';
+        }
+
+        async function cargarClientes() {
+            const clientes = await fetchAPI('/api/clientes');
+            document.getElementById('listaClientes').innerHTML = clientes.map(c => `
+                <div style="padding: 1rem; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${c.Nombres} ${c.Apellidos}</strong>
+                        <br><small style="color: #888;">${c.Telefono} - ${c.Cedula || 'Sin cédula'}</small>
+                        ${c.Email ? `<br><small style="color: #888;">${c.Email}</small>` : ''}
+                    </div>
+                    <span class="badge ${c.Sexo === 'M' ? 'badge-info' : 'badge-warning'}">${c.Sexo === 'M' ? 'M' : 'F'}</span>
+                </div>
+            `).join('') || '<p style="color: #888; padding: 1rem;">No hay clientes registrados</p>';
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarClientes);
+
+        document.getElementById('formCliente')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                Cedula: document.getElementById('cedula').value,
+                Nombres: document.getElementById('nombres').value,
+                Apellidos: document.getElementById('apellidos').value,
+                Telefono: document.getElementById('telefono').value,
+                Email: document.getElementById('email').value || null,
+                Direccion: document.getElementById('direccion').value || null,
+                Sexo: document.getElementById('sexo').value
+            };
+
+            try {
+                const result = await fetch('/api/clientes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).then(r => r.json());
+
+                if (result.success) {
+                    showAlert('Cliente registrado exitosamente', 'success');
+                    document.getElementById('formCliente').reset();
+                    cargarClientes();
+                } else {
+                    showAlert(result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'danger');
+            }
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('barberia_session');
+            window.location.href = '/login.html';
+        });
+    </script>
+</body>
+
+</html>

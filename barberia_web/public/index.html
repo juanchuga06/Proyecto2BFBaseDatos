@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Men's Barber | Inicio</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <img src="/img/logo_black.jpg" class="nav-logo-icon" alt="Logo" style="border-radius: 50%;">
+            MEN'S
+        </a>
+        <ul class="nav-links">
+            <li><a href="/" class="active">INICIO</a></li>
+            <li><a href="/busqueda.html">BÚSQUEDA</a></li>
+            <li><a href="/reservar.html">RESERVAR CITA</a></li>
+            <li><a href="/clientes.html">CLIENTES</a></li>
+            <li><a href="/citas.html">CITAS</a></li>
+            <li class="admin-only"><a href="/barberos.html">BARBEROS</a></li>
+            <li class="admin-only"><a href="/servicios.html">SERVICIOS</a></li>
+            <li class="admin-only"><a href="/sedes.html">SEDES</a></li>
+            <li><a href="#" id="btnLogin">INGRESAR</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <!-- Hero Section -->
+    <section class="hero">
+        <div style="width: 100%; max-width: 900px;">
+            <img src="/img/logo_full_white.png" alt="Men's Barber"
+                style="max-width: 500px; width: 80%; margin-bottom: 2rem; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));">
+
+            <h2
+                style="font-family: 'Oswald', sans-serif; font-weight: 400; letter-spacing: 5px; font-size: 1.5rem; margin-bottom: 4rem; text-shadow: 2px 2px 4px black;">
+                LA FRANQUICIA #1 DE TODO EL ECUADOR
+            </h2>
+
+            <div class="btn-container" style="display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;">
+                <a href="/agendar.html" class="btn btn-outline"
+                    style="border-radius: 50px; padding: 12px 40px; border-width: 2px;">RESERVAS BARBERIA</a>
+                <a href="/busqueda.html" class="btn btn-outline"
+                    style="border-radius: 50px; padding: 12px 40px; border-width: 2px;">REPORTES</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="container">
+        <div class="grid grid-3">
+            <div class="card stat-card">
+                <div class="stat-value" id="totalSedes">-</div>
+                <div class="stat-label">Sedes Nacionales</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-value" id="totalBarberos">-</div>
+                <div class="stat-label">Barberos Elite</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-value" id="totalServicios">-</div>
+                <div class="stat-label">Servicios Premium</div>
+            </div>
+        </div>
+
+        <!-- Gallery Section -->
+        <div class="gallery-section">
+            <h2 class="card-header" style="border:none; text-align:center; font-size: 2rem; margin-bottom: 1rem;">
+                NUESTROS TRABAJOS</h2>
+            <div class="gallery-grid">
+                <div class="gallery-item">
+                    <img src="/img/service-1.jpg" alt="Interior Barberia"
+                        style="width:100%; height:100%; object-fit:cover; display:block;">
+                </div>
+                <div class="gallery-item">
+                    <img src="/img/trabajos_2.png" alt="Corte Profesional"
+                        style="width:100%; height:100%; object-fit:cover; display:block;">
+                </div>
+                <div class="gallery-item">
+                    <img src="/img/gallery-4.jpg" alt="Barbero en acción"
+                        style="width:100%; height:100%; object-fit:cover; display:block;">
+                </div>
+                <div class="gallery-item">
+                    <img src="/img/trabajos_4.jpg" alt="Ambiente Lounge"
+                        style="width:100%; height:100%; object-fit:cover; display:block;">
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top: 3rem;">
+            <div class="card">
+                <div class="card-header">Nuestras Sedes</div>
+                <ul id="listaSedes" style="list-style: none; padding: 0; max-height: 569px; overflow-y: auto;">
+                    <li class="loader"></li>
+                </ul>
+            </div>
+
+            <!-- Service Cards Container -->
+            <div style="grid-column: span 1;">
+                <h2 class="card-header" style="border:none; margin-bottom: 1rem;">SERVICIOS ELITE</h2>
+                <div id="listaServicios" class="gallery-grid"
+                    style="grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 0;">
+                    <div class="card service-card" style="padding: 10px; text-align: center;">
+                        <img src="/img/service-1.jpg" alt="Corte"
+                            style="width:100%; height:120px; object-fit:cover; border-radius:5px; margin-bottom:0.5rem;">
+                        <h4 style="margin:0; font-family:'Oswald';">CORTE</h4>
+                    </div>
+                    <div class="card service-card" style="padding: 10px; text-align: center;">
+                        <img src="/img/service-2.png" alt="Barba"
+                            style="width:100%; height:120px; object-fit:cover; border-radius:5px; margin-bottom:0.5rem;">
+                        <h4 style="margin:0; font-family:'Oswald';">BARBA</h4>
+                    </div>
+                    <div class="card service-card" style="padding: 10px; text-align: center;">
+                        <img src="/img/service-3.webp" alt="Completo"
+                            style="width:100%; height:120px; object-fit:cover; border-radius:5px; margin-bottom:0.5rem;">
+                        <h4 style="margin:0; font-family:'Oswald';">PACK</h4>
+                    </div>
+                    <div class="card service-card" style="padding: 10px; text-align: center;">
+                        <img src="/img/service-4.png" alt="Facial"
+                            style="width:100%; height:120px; object-fit:cover; border-radius:5px; margin-bottom:0.5rem;">
+                        <h4 style="margin:0; font-family:'Oswald';">SPA</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Men's Barber. Todos los derechos reservados.</p>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.7;">Professional Barber System</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+        // Verificar sesion
+        const session = JSON.parse(localStorage.getItem('barberia_session') || 'null');
+
+        if (session) {
+            document.getElementById('btnLogin').textContent = 'SALIR (' + session.nombre.split(' ')[0].toUpperCase() + ')';
+            document.getElementById('btnLogin').addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('barberia_session');
+                window.location.reload();
+            });
+
+            // Mostrar opciones admin si es franquiciado
+            if (session.rol !== 'franquiciado') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+            }
+        } else {
+            document.getElementById('btnLogin').addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.href = '/login.html';
+            });
+            // Ocultar opciones admin si no hay sesion
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
+        // Cargar estadisticas al iniciar
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const [sedes, barberos, servicios] = await Promise.all([
+                    fetch('/api/sedes').then(r => r.json()),
+                    fetch('/api/barberos').then(r => r.json()),
+                    fetch('/api/servicios').then(r => r.json())
+                ]);
+
+                document.getElementById('totalSedes').textContent = sedes.length;
+                document.getElementById('totalBarberos').textContent = barberos.length;
+                document.getElementById('totalServicios').textContent = servicios.length;
+
+                // Lista de sedes
+                document.getElementById('listaSedes').innerHTML = sedes.map(s => `
+                    <li style="padding: 0.8rem 0; border-bottom: 1px solid #333;">
+                        <strong>${s.NombreSede}</strong>
+                        <br><small style="color: #888;">${s.NombreCiudad} - ${s.Direccion}</small>
+                    </li>
+                `).join('');
+
+                // Lista de servicios
+                // Lista de servicios
+                const imageMap = {
+                    'CORTE DE CABELLO': '/img/corte_de_cabello.jpg',
+                    'AFEITADO DE BARBA': '/img/afeitado_de_barba.png',
+                    'CORTE + BARBA': '/img/corte_mas_barba.png',
+                    'MASCARILLA NEGRA': '/img/mascarilla_negra.png'
+                };
+
+                document.getElementById('listaServicios').innerHTML = servicios.slice(0, 4).map(s => {
+                    // Normalize backend name to upper case for matching
+                    const name = s.NombreServicio.toUpperCase();
+                    const imgUrl = imageMap[name] || '/img/logo_white.jpg';
+
+                    return `
+                    <div class="service-card">
+                        <img src="${imgUrl}" alt="${s.NombreServicio}" style="width:100%; height:200px; object-fit:cover; display:block;">
+                        <div class="service-info">
+                            <h3 class="service-title">${s.NombreServicio}</h3>
+                            <p class="service-price">$${s.Precio}</p>
+                        </div>
+                    </div>
+                `}).join('');
+
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>

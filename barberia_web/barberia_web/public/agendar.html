@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Cita | Barberia T13</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <img src="/img/logo_black.jpg" class="nav-logo-icon" alt="Logo" style="border-radius: 50%;">
+            MEN'S
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">INICIO</a></li>
+            <li><a href="/busqueda.html">BUSQUEDA</a></li>
+            <li><a href="/agendar.html" class="active">RESERVAR CITA</a></li>
+            <li id="navClientes" class="admin-only"><a href="/clientes.html">CLIENTES</a></li>
+            <li id="navCitas" class="admin-only"><a href="/citas.html">CITAS</a></li>
+            <li class="admin-only"><a href="/barberos.html">BARBEROS</a></li>
+            <li class="admin-only"><a href="/servicios.html">SERVICIOS</a></li>
+            <li class="admin-only"><a href="/sedes.html">SEDES</a></li>
+            <li id="navLogin"><a href="/login.html">LOGIN</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Reserva tu Experiencia</h1>
+            <p>Agenda tu cita en pocos pasos. Si eres nuevo, te registraremos automáticamente.</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <div class="card">
+            <form id="formAgendar">
+                <div class="grid grid-2">
+                    <!-- COLUMNA 1: DATOS DE LA CITA -->
+                    <div>
+                        <h3 class="card-header"
+                            style="font-size: 1.2rem; border-bottom: 1px solid #333; margin-bottom: 1rem;">1. Detalles
+                            de la Cita</h3>
+
+                        <div class="form-group">
+                            <label for="sede">Sede</label>
+                            <select id="sede" class="form-control" required>
+                                <option value="">Seleccione una sede...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="barbero">Barbero</label>
+                            <select id="barbero" class="form-control" required disabled>
+                                <option value="">Primero seleccione una sede...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fechaHora">Fecha y Hora Deseada</label>
+                            <input type="datetime-local" id="fechaHora" class="form-control" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Servicios</label>
+                            <div id="serviciosContainer"
+                                style="max-height: 250px; overflow-y: auto; background: #2d2d2d; padding: 1rem; border-radius: 5px;">
+                                <div class="loader"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COLUMNA 2: DATOS DEL CLIENTE -->
+                    <div>
+                        <h3 class="card-header"
+                            style="font-size: 1.2rem; border-bottom: 1px solid #333; margin-bottom: 1rem;">2. Tus Datos
+                            Personales</h3>
+
+                        <div class="form-group">
+                            <label for="cedula">Cédula (Identificación)</label>
+                            <input type="text" id="cedula" class="form-control" required pattern="[0-9]{10}"
+                                maxlength="10" placeholder="10 dígitos">
+                        </div>
+
+                        <div class="grid grid-2" style="gap: 1rem;">
+                            <div class="form-group">
+                                <label for="nombres">Nombres</label>
+                                <input type="text" id="nombres" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="apellidos">Apellidos</label>
+                                <input type="text" id="apellidos" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="telefono">Teléfono</label>
+                            <input type="text" id="telefono" class="form-control" required pattern="0[0-9]{9}"
+                                maxlength="10" placeholder="099...">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email (Opcional)</label>
+                            <input type="email" id="email" class="form-control"
+                                placeholder="Para enviarte confirmación">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="sexo">Sexo</label>
+                            <select id="sexo" class="form-control" required>
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary"
+                        style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+                        CONFIRMAR RESERVA
+                    </button>
+                    <p style="text-align: center; margin-top: 1rem; color: #888; font-size: 0.9rem;">
+                        Al confirmar, aceptas nuestros términos de servicio.
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Men's Barber. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+        // Check session for UI adjustments
+        const session = JSON.parse(localStorage.getItem('barberia_session') || 'null');
+        if (session) {
+            // Si es personal del sistema, redirigir a la reserva interna
+            window.location.href = '/reservar.html';
+        } else {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load Data
+            const [sedes, barberos, servicios] = await Promise.all([
+                fetchAPI('/api/sedes'),
+                fetchAPI('/api/barberos'),
+                fetchAPI('/api/servicios')
+            ]);
+
+            // Disable past dates
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('fechaHora').min = now.toISOString().slice(0, 16);
+
+            // Populate Sedes
+            document.getElementById('sede').innerHTML += sedes.map(s =>
+                `<option value="${s.SedeID}">${s.NombreSede} (${s.NombreCiudad})</option>`
+            ).join('');
+
+            // Populate Servicios
+            document.getElementById('serviciosContainer').innerHTML = servicios.map(s => `
+                <label style="display: flex; align-items: center; padding: 0.5rem; cursor: pointer; border-bottom: 1px solid #333;">
+                    <input type="checkbox" name="servicio" value="${s.ServicioID}" style="margin-right: 10px;">
+                    <div style="flex-grow: 1;">
+                        <span style="font-weight: bold;">${s.NombreServicio}</span>
+                        <br><small style="color: #aaa;">${s.DuracionMinutos} min</small>
+                    </div>
+                    <span class="badge badge-gold">$${s.Precio}</span>
+                </label>
+            `).join('');
+
+            // Filter Barbers
+            const barberoSelect = document.getElementById('barbero');
+            document.getElementById('sede').addEventListener('change', (e) => {
+                const sedeID = parseInt(e.target.value);
+                if (!sedeID) {
+                    barberoSelect.innerHTML = '<option value="">Primero seleccione una sede...</option>';
+                    barberoSelect.disabled = true;
+                    return;
+                }
+
+                const filtrados = barberos.filter(b => b.SedeID === sedeID);
+                barberoSelect.innerHTML = '<option value="">Seleccione un barbero...</option>' +
+                    filtrados.map(b => `<option value="${b.BarberoID}">${b.Nombres} ${b.Apellidos} - ${b.NombreEspecialidad}</option>`).join('');
+                barberoSelect.disabled = false;
+            });
+        });
+
+        // Handle Submit
+        document.getElementById('formAgendar').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const serviciosChecked = Array.from(document.querySelectorAll('input[name="servicio"]:checked')).map(cb => parseInt(cb.value));
+
+            if (serviciosChecked.length === 0) {
+                showAlert('Por favor selecciona al menos un servicio.', 'warning');
+                return;
+            }
+
+            const payload = {
+                cita: {
+                    SedeID: parseInt(document.getElementById('sede').value),
+                    BarberoID: parseInt(document.getElementById('barbero').value),
+                    FechaHora: document.getElementById('fechaHora').value,
+                    Servicios: serviciosChecked
+                },
+                cliente: {
+                    Cedula: document.getElementById('cedula').value,
+                    Nombres: document.getElementById('nombres').value,
+                    Apellidos: document.getElementById('apellidos').value,
+                    Telefono: document.getElementById('telefono').value,
+                    Email: document.getElementById('email').value,
+                    Sexo: document.getElementById('sexo').value,
+                    Direccion: 'Registrado Web' // Default value
+                }
+            };
+
+            try {
+                const result = await fetch('/api/citas-publicas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                }).then(r => r.json());
+
+                if (result.success) {
+                    // Success UI
+                    document.querySelector('.card').innerHTML = `
+                        <div style="text-align: center; padding: 3rem;">
+                            <div style="font-size: 4rem; color: var(--success); margin-bottom: 1rem;">&#10004;</div>
+                            <h2 style="color: var(--brand-white); margin-bottom: 1rem;">¡Reserva Confirmada!</h2>
+                            <p style="font-size: 1.2rem; color: #ccc;">Tu cita ha sido agendada exitosamente.</p>
+                            <p style="margin-top: 2rem;">
+                                <a href="/" class="btn btn-outline">Volver al Inicio</a>
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    showAlert(result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error de conexión: ' + error.message, 'danger');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Citas | Barbería T13</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <img src="/img/logo_black.jpg" class="nav-logo-icon" alt="Logo" style="border-radius: 50%;">
+            MEN'S
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">INICIO</a></li>
+            <li><a href="/busqueda.html">BÚSQUEDA</a></li>
+            <li><a href="/reservar.html">RESERVAR CITA</a></li>
+            <li><a href="/clientes.html">CLIENTES</a></li>
+            <li><a href="/citas.html" class="active">CITAS</a></li>
+            <li class="admin-only"><a href="/barberos.html">BARBEROS</a></li>
+            <li class="admin-only"><a href="/servicios.html">SERVICIOS</a></li>
+            <li class="admin-only"><a href="/sedes.html">SEDES</a></li>
+            <li><a href="#" id="btnLogout">SALIR</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>Gestión de Citas</h1>
+            <p>Visualiza y administra la agenda de citas</p>
+        </div>
+
+        <div id="alertContainer"></div>
+
+        <!-- Acciones especiales -->
+        <div class="card admin-only" style="margin-bottom: 2rem;">
+            <div class="card-header">Acciones del Sistema</div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button id="btnProcesarNoAsistidas" class="btn btn-outline">
+                    Procesar Citas No Asistidas
+                </button>
+                <a href="/reservar.html" class="btn btn-primary">Nueva Cita</a>
+            </div>
+        </div>
+
+        <!-- Tabla de citas -->
+        <div class="card">
+            <div class="card-header">Todas las Citas</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Fecha/Hora</th>
+                            <th>Cliente</th>
+                            <th>Barbero</th>
+                            <th>Sede</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaCitas">
+                        <tr>
+                            <td colspan="8">
+                                <div class="loader"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Men's Barber. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="/js/app.js"></script>
+    <script>
+        // Verificar sesion
+        const session = JSON.parse(localStorage.getItem('barberia_session') || 'null');
+        if (!session) {
+            window.location.href = '/login.html';
+        }
+
+        // Ocultar opciones admin si es barbero
+        if (session.rol !== 'franquiciado') {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
+        }
+
+        async function cargarCitas() {
+            let citas = await fetchAPI('/api/citas');
+
+            // Si es barbero, filtrar solo sus citas
+            if (session.rol === 'barbero') {
+                citas = citas.filter(c => c.BarberoID === session.id);
+            }
+
+            document.getElementById('tablaCitas').innerHTML = citas.map(c => {
+                const fecha = new Date(c.FechaHora);
+                let badgeClass = 'badge-info';
+                if (c.Estado === 'Atendida') badgeClass = 'badge-success';
+                if (c.Estado === 'Cancelada') badgeClass = 'badge-danger';
+                if (c.Estado === 'No Asistida') badgeClass = 'badge-warning';
+
+                const showActions = session.rol === 'franquiciado' && c.Estado === 'Pendiente';
+
+                return `
+                    <tr>
+                        <td>#${c.CitaID}</td>
+                        <td>${fecha.toLocaleString('es-EC')}</td>
+                        <td>${c.NombreCliente || '-'}</td>
+                        <td>${c.NombreBarbero || '-'}</td>
+                        <td>${c.NombreSede || '-'}</td>
+                        <td><span class="badge badge-gold">$${c.Total}</span></td>
+                        <td><span class="badge ${badgeClass}">${c.Estado}</span></td>
+                        <td>
+                            ${showActions ? `
+                                <button onclick="atenderCita(${c.CitaID})" class="btn btn-success" style="padding: 5px 10px; font-size: 0.8rem;">OK</button>
+                                <button onclick="cancelarCita(${c.CitaID})" class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;">X</button>
+                            ` : '-'}
+                        </td>
+                    </tr>
+                `;
+            }).join('') || '<tr><td colspan="8">No hay citas</td></tr>';
+        }
+
+        document.addEventListener('DOMContentLoaded', cargarCitas);
+
+        async function cancelarCita(id) {
+            if (!confirm('Seguro que deseas cancelar esta cita?')) return;
+            try {
+                const result = await fetch(`/api/citas/${id}/cancelar`, { method: 'POST' }).then(r => r.json());
+                if (result.success) {
+                    showAlert('Cita cancelada', 'success');
+                    cargarCitas();
+                } else {
+                    showAlert(result.error, 'danger');
+                }
+            } catch (err) {
+                showAlert(err.message, 'danger');
+            }
+        }
+
+        async function atenderCita(id) {
+            try {
+                const result = await fetch(`/api/citas/${id}/atender`, { method: 'POST' }).then(r => r.json());
+                if (result.success) {
+                    showAlert('Cita marcada como atendida', 'success');
+                    cargarCitas();
+                } else {
+                    showAlert(result.error, 'danger');
+                }
+            } catch (err) {
+                showAlert(err.message, 'danger');
+            }
+        }
+
+        document.getElementById('btnProcesarNoAsistidas')?.addEventListener('click', async () => {
+            if (!confirm('¿Deseas procesar las citas vencidas?\nEsto marcará todas las citas pendientes del pasado como "No Asistida".')) return;
+            try {
+                const result = await fetch('/api/procesar-no-asistidas', { method: 'POST' }).then(r => r.json());
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    cargarCitas();
+                } else {
+                    showAlert(result.error, 'danger');
+                }
+            } catch (err) {
+                showAlert(err.message, 'danger');
+            }
+        });
+
+        document.getElementById('btnLogout').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('barberia_session');
+            window.location.href = '/login.html';
+        });
+    </script>
+</body>
+
+</html>

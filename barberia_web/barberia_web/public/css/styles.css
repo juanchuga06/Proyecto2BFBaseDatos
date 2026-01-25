@@ -1,0 +1,534 @@
+/* =============================================
+   MEN'S BARBER - Brand Stylesheet
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+    --brand-black: #000000;
+    --brand-dark: #121212;
+    --brand-card-bg: #1e1e1e;
+    --brand-white: #ffffff;
+    --brand-gray: #f5f5f5;
+    --text-muted: #a0a0a0;
+
+    /* Functional Colors */
+    --hover-overlay: rgba(255, 255, 255, 0.1);
+    --border-color: #333333;
+    --success: #28a745;
+    --danger: #d9534f;
+    --warning: #f0ad4e;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--brand-black);
+    color: var(--brand-white);
+    min-height: 100vh;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.navbar-brand,
+.btn,
+.nav-links a {
+    font-family: 'Oswald', sans-serif;
+    /* Strong, condensed font for headings */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* =============================================
+   NAVIGATION
+   ============================================= */
+.navbar {
+    background: rgba(0, 0, 0, 0.95);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--brand-white);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-logo-icon {
+    height: 40px;
+    width: auto;
+    filter: invert(1);
+    /* Ensure it's white if using the black version, or just use white logo */
+}
+
+.nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+    position: relative;
+    padding: 5px 0;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: var(--brand-white);
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: var(--brand-white);
+    transition: width 0.3s;
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+    width: 100%;
+}
+
+/* =============================================
+   HERO SECTION
+   ============================================= */
+.hero {
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    background:
+        linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)),
+        url('/img/hero_mensecuador.jpg');
+    /* Authentic background from mensecuador.com */
+    background-size: cover;
+    background-position: center;
+}
+
+.hero h1 {
+    font-size: 5rem;
+    line-height: 1;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.hero h1 span {
+    display: block;
+    font-size: 2rem;
+    font-weight: 300;
+    letter-spacing: 5px;
+    color: var(--brand-gray);
+    margin-top: 1rem;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    color: var(--brand-gray);
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+/* =============================================
+   BUTTONS (Monochrome)
+   ============================================= */
+.btn {
+    display: inline-block;
+    padding: 12px 35px;
+    border-radius: 0;
+    /* Sharp edges */
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background: var(--brand-white);
+    color: var(--brand-black);
+    border-color: var(--brand-white);
+}
+
+.btn-primary:hover {
+    background: transparent;
+    color: var(--brand-white);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--brand-white);
+    color: var(--brand-white);
+}
+
+.btn-outline:hover {
+    background: var(--brand-white);
+    color: var(--brand-black);
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+/* =============================================
+   CARDS & CONTAINERS
+   ============================================= */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+}
+
+.card {
+    background: var(--brand-card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    /* Sharp edges */
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.card-header {
+    color: var(--brand-white);
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 768px) {
+
+    .grid-2,
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+    }
+}
+
+/* =============================================
+   FORMS
+   ============================================= */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    background: var(--brand-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 0;
+    color: var(--brand-white);
+    font-family: 'Roboto', sans-serif;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--brand-white);
+}
+
+/* =============================================
+   TABLES
+   ============================================= */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    padding: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    color: var(--text-muted);
+    font-family: 'Oswald', sans-serif;
+}
+
+td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* =============================================
+   BADGES (Minimalist)
+   ============================================= */
+.badge {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+}
+
+.badge-gold {
+    /* Changed to white/border style for Men's theme */
+    border: 1px solid var(--brand-white);
+    color: var(--brand-white);
+}
+
+.badge-success {
+    background: var(--success);
+    color: white;
+}
+
+.badge-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.badge-info {
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+}
+
+/* =============================================
+   IMAGE PLACEHOLDERS & NEW COMPONENTS
+   ============================================= */
+.img-placeholder {
+    width: 100%;
+    height: 200px;
+    background-color: #2a2a2a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #555;
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-bottom: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.img-placeholder::after {
+    content: 'FOTO PENDIENTE';
+    font-size: 0.8rem;
+}
+
+.service-card {
+    background: var(--brand-card-bg);
+    border: 1px solid var(--border-color);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--brand-white);
+}
+
+.service-info {
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.service-title {
+    font-size: 1.2rem;
+    color: var(--brand-white);
+    margin-bottom: 0.5rem;
+    font-family: 'Oswald', sans-serif;
+}
+
+.service-price {
+    color: var(--text-muted);
+    font-weight: 300;
+}
+
+.gallery-section {
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.gallery-item {
+    height: 250px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+    overflow: hidden;
+    /* Added to support image scaling */
+}
+
+/* =============================================
+   LOGIN PAGE SPECIFIC
+   ============================================= */
+.login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--brand-black);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-bg-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://images.unsplash.com/photo-1593702295094-aea8c59b29fc?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    opacity: 0.4;
+    filter: grayscale(100%);
+    z-index: 1;
+}
+
+.login-box {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 450px;
+    padding: 3rem;
+    background: rgba(0, 0, 0, 0.85);
+    /* Dark semi-transparent */
+    border: 1px solid #333;
+    backdrop-filter: blur(10px);
+    text-align: center;
+}
+
+.login-logo-img {
+    max-width: 180px;
+    margin-bottom: 2rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+}
+
+/* =============================================
+   FOOTER
+   ============================================= */
+footer {
+    background: var(--brand-dark);
+    padding: 1rem 0;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    margin-top: auto;
+}
+
+footer p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Utilities */
+.stat-value {
+    font-family: 'Oswald', sans-serif;
+    font-size: 4rem;
+    color: var(--brand-white);
+}
+
+.loader::after {
+    border: 4px solid #333;
+    border-top-color: var(--brand-white);
+}
+
+/* =============================================
+   ALERTS
+   ============================================= */
+.alert {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-weight: 500;
+    font-family: 'Roboto', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+.alert-info {
+    color: var(--brand-white);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+}
+
+.alert-success {
+    color: var(--brand-white);
+    background: rgba(40, 167, 69, 0.1);
+    border-bottom: 3px solid var(--success);
+    /* Subrayado verde */
+}
+
+.alert-danger {
+    color: var(--brand-white);
+    background: rgba(217, 83, 79, 0.1);
+    border-bottom: 3px solid var(--danger);
+    /* Subrayado rojo */
+}
