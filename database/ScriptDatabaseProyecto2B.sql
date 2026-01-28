@@ -1,13 +1,6 @@
--- =============================================================================
--- SCRIPT MAESTRO DE BASE DE DATOS - FINAL CORREGIDO
--- Proyecto: Franquicia Barberia (Ingeniería de Software)
--- Autor: Bryan Ayala (Generado por Asistente AI)
--- Versión: 3.0 (Integrada y Depurada)
--- =============================================================================
+-- Script Base de Datos Barberia
+-- Bryan Ayala y Juan Chugá
 
--- =============================================================================
--- PASO 1: LIMPIEZA Y CREACIÓN DEL ENTORNO
--- =============================================================================
 USE master;
 GO
 
@@ -27,11 +20,7 @@ GO
 CREATE SCHEMA Gestion;
 GO
 
--- =============================================================================
--- PASO 1.5: CONFIGURACIÓN DE SEGURIDAD (Login y Usuario App)
--- =============================================================================
-
--- 1. Crear Login en el servidor (si no existe)
+-- Login y usuario para la app
 IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'app_barberia')
 BEGIN
     CREATE LOGIN [app_barberia] WITH PASSWORD = 'Barberia2024!', CHECK_POLICY = OFF;
@@ -39,7 +28,6 @@ BEGIN
 END
 GO
 
--- 2. Crear Usuario en la BD asociado al Login
 IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'app_barberia')
 BEGIN
     CREATE USER [app_barberia] FOR LOGIN [app_barberia];
@@ -47,13 +35,10 @@ BEGIN
 END
 GO
 
--- 3. Asignar permisos (Rol de Propietario para depuración y desarrollo)
 ALTER ROLE db_owner ADD MEMBER [app_barberia];
 GO
 
--- =============================================================================
--- PASO 2: DOMINIOS Y TIPOS DE DATOS
--- =============================================================================
+-- Dominios
 CREATE TYPE Gestion.D_ID FROM INT NOT NULL;
 CREATE TYPE Gestion.D_Identificacion FROM NVARCHAR(13) NOT NULL;
 CREATE TYPE Gestion.D_Nombre FROM NVARCHAR(100) NOT NULL;
@@ -71,18 +56,15 @@ CREATE TYPE Gestion.D_Sexo FROM CHAR(1) NULL;
 CREATE TYPE Gestion.D_Booleano FROM BIT NOT NULL;
 GO
 
--- =============================================================================
--- PASO 3: TABLAS (DDL) CON AUTENTICACIÓN
--- =============================================================================
-
+-- Tablas
 CREATE TABLE Gestion.Franquiciado (
     FranquiciadoID      Gestion.D_ID IDENTITY(1,1) PRIMARY KEY,
     NombreCompleto      Gestion.D_Nombre,
     RUC                 Gestion.D_Identificacion UNIQUE,
     FechaInicioContrato Gestion.D_Fecha NOT NULL DEFAULT GETDATE(),
     PorcentajeRegalia   Gestion.D_Porcentaje DEFAULT 5.00,
-    Email               NVARCHAR(100) NULL, -- Auth
-    PasswordHash        NVARCHAR(255) NULL  -- Auth
+    Email               NVARCHAR(100) NULL,
+    PasswordHash        NVARCHAR(255) NULL
 );
 GO
 
@@ -124,7 +106,7 @@ CREATE TABLE Gestion.Barbero (
     FechaRegistro   DATETIME DEFAULT GETDATE(),
     EspecialidadID  Gestion.D_ID,
     SedeID          Gestion.D_ID,
-    PasswordHash    NVARCHAR(255) NULL, -- Auth
+    PasswordHash    NVARCHAR(255) NULL,
     FOREIGN KEY (EspecialidadID) REFERENCES Gestion.Especialidad(EspecialidadID),
     FOREIGN KEY (SedeID) REFERENCES Gestion.Sede(SedeID)
 );
@@ -165,7 +147,6 @@ CREATE TABLE Gestion.Cita (
 );
 GO
 
--- CORRECCION CRITICA: Se eliminó PrecioUnitario para consistencia lógica
 CREATE TABLE Gestion.DetalleCitaServicio (
     DetalleServicioID Gestion.D_ID IDENTITY(1,1) PRIMARY KEY,
     CitaID            Gestion.D_ID,
@@ -175,11 +156,7 @@ CREATE TABLE Gestion.DetalleCitaServicio (
 );
 GO
 
--- =============================================================================
--- PASO 4: DATOS DE PRUEBA (SEEDING)
--- =============================================================================
-
--- CIUDADES
+-- Datos de prueba
 INSERT INTO Gestion.Ciudad (NombreCiudad) VALUES 
 ('Quito'), ('Guayaquil'), ('Cuenca'), ('Manta'), ('Ambato'),
 ('Loja'), ('Santo Domingo'), ('Machala'), ('Portoviejo'), ('Riobamba'),
@@ -187,7 +164,6 @@ INSERT INTO Gestion.Ciudad (NombreCiudad) VALUES
 ('Duran'), ('Quevedo'), ('Milagro'), ('Salinas'), ('Santa Elena');
 GO
 
--- FRANQUICIADOS
 INSERT INTO Gestion.Franquiciado (NombreCompleto, RUC, PorcentajeRegalia, Email, PasswordHash) VALUES 
 ('Carlos Mendoza', '1712345678001', 5.00, 'carlos.mendoza@barberia.com', 'admin123'),
 ('Ana Torres', '1798765432001', 5.50, 'ana.torres@barberia.com', 'admin123'),
@@ -211,7 +187,6 @@ INSERT INTO Gestion.Franquiciado (NombreCompleto, RUC, PorcentajeRegalia, Email,
 ('Daniela Soto', '2712345678001', 5.25, 'daniela.soto@barberia.com', 'admin123');
 GO
 
--- SEDES
 INSERT INTO Gestion.Sede (NombreSede, Direccion, Telefono, CiudadID, FranquiciadoID) VALUES 
 ('Sede Matriz Norte', 'Av. Amazonas y Naciones Unidas', '0223456789', 1, 1),
 ('Sede Centro Historico', 'Calle Garcia Moreno 123', '0234567890', 1, 2),
@@ -235,14 +210,12 @@ INSERT INTO Gestion.Sede (NombreSede, Direccion, Telefono, CiudadID, Franquiciad
 ('Sede Quevedo', 'Calle 7 de Octubre', '0512345681', 17, 20);
 GO
 
--- ESPECIALIDADES
 INSERT INTO Gestion.Especialidad (NombreEspecialidad) VALUES 
 ('Corte Clasico'), ('Barberia Moderna'), ('Colorimetria'), ('Afeitado Tradicional'),
 ('Diseno de Barba'), ('Corte Infantil'), ('Tratamientos Capilares'), ('Alisado'),
 ('Trenzas y Dreadlocks'), ('Estilo Urbano');
 GO
 
--- BARBEROS
 INSERT INTO Gestion.Barbero (Cedula, Nombres, Apellidos, Telefono, Email, FechaNacimiento, Sexo, EspecialidadID, SedeID, PasswordHash) VALUES 
 ('1712345678', 'Juan', 'Perez', '0991234567', 'juan.perez@barberia.com', '1990-05-15', 'M', 1, 1, 'barbero123'),
 ('1723456789', 'Maria', 'Lopez', '0992345678', 'maria.lopez@barberia.com', '1992-08-20', 'F', 2, 1, 'barbero123'),
@@ -266,7 +239,6 @@ INSERT INTO Gestion.Barbero (Cedula, Nombres, Apellidos, Telefono, Email, FechaN
 ('0123456789', 'Mariana', 'Delgado', '0980123456', 'mariana.delgado@barberia.com', '1996-02-08', 'F', 10, 10, 'barbero123');
 GO
 
--- CLIENTES
 INSERT INTO Gestion.Cliente (Cedula, Nombres, Apellidos, Telefono, Email, Direccion, Sexo) VALUES 
 ('1750123456', 'Roberto', 'Aguirre', '0971234567', 'roberto.aguirre@email.com', 'Calle A 123', 'M'),
 ('1751234567', 'Carmen', 'Benitez', '0972345678', 'carmen.benitez@email.com', 'Av. B 456', 'F'),
@@ -295,7 +267,6 @@ INSERT INTO Gestion.Cliente (Cedula, Nombres, Apellidos, Telefono, Email, Direcc
 ('1852345678', 'Nicolas', 'Campos', '0955678901', 'nicolas.campos@email.com', 'Calle Y 345', 'M');
 GO
 
--- SERVICIOS
 INSERT INTO Gestion.Servicio (NombreServicio, Precio, DuracionMinutos) VALUES 
 ('Corte de Cabello', 10.00, 30),
 ('Afeitado de Barba', 8.00, 20),
@@ -311,7 +282,6 @@ INSERT INTO Gestion.Servicio (NombreServicio, Precio, DuracionMinutos) VALUES
 ('Trenzas', 30.00, 60);
 GO
 
--- CITAS (La carga masiva de citas ya incluía el total calculado, lo mantenemos como seed)
 INSERT INTO Gestion.Cita (FechaHora, Estado, ClienteID, BarberoID, SedeID, Total) VALUES 
 ('2025-01-15 09:00:00', 'Atendida', 1, 1, 1, 11.50),
 ('2025-01-15 10:00:00', 'Atendida', 2, 2, 1, 17.25),
@@ -333,7 +303,6 @@ INSERT INTO Gestion.Cita (FechaHora, Estado, ClienteID, BarberoID, SedeID, Total
 ('2025-01-23 14:00:00', 'Atendida', 18, 18, 9, 34.50),
 ('2025-01-24 10:00:00', 'Atendida', 19, 19, 10, 11.50),
 ('2025-01-24 16:00:00', 'Atendida', 20, 20, 10, 17.25),
--- Citas futuras
 ('2026-02-01 09:00:00', 'Pendiente', 1, 1, 1, 0.00),
 ('2026-02-01 10:00:00', 'Pendiente', 2, 2, 1, 0.00),
 ('2026-02-02 11:00:00', 'Pendiente', 3, 3, 2, 0.00),
@@ -346,26 +315,24 @@ INSERT INTO Gestion.Cita (FechaHora, Estado, ClienteID, BarberoID, SedeID, Total
 ('2026-02-05 16:00:00', 'Pendiente', 10, 10, 5, 0.00);
 GO
 
--- DETALLE CITA SERVICIO CORREGIDO (Sin PrecioUnitario)
 INSERT INTO Gestion.DetalleCitaServicio (CitaID, ServicioID) VALUES 
-(1, 1), -- Cita 1: Corte
-(2, 3), -- Cita 2: Corte + Barba
-(3, 1), (3, 5), -- Cita 3: Corte + Tinte
-(4, 1), -- Cita 4: Corte
-(5, 3), -- Cita 5: Corte + Barba
-(7, 3), (7, 4), -- Cita 7: Corte+Barba + Mascarilla
-(8, 6), -- Cita 8: Alisado
-(9, 1), (9, 7), -- Cita 9: Corte + Tratamiento
-(11, 1), -- Cita 11: Corte
-(12, 3), -- Cita 12: Corte + Barba
-(13, 3), (13, 4), -- Cita 13: Corte+Barba + Mascarilla
-(15, 1), (15, 7), -- Cita 15: Corte + Tratamiento
-(16, 1), -- Cita 16: Corte
-(17, 2), -- Cita 17: Afeitado
-(18, 12), -- Cita 18: Trenzas
-(19, 1), -- Cita 19: Corte
-(20, 3), -- Cita 20: Corte + Barba
--- Citas futuras con servicios
+(1, 1),
+(2, 3),
+(3, 1), (3, 5),
+(4, 1),
+(5, 3),
+(7, 3), (7, 4),
+(8, 6),
+(9, 1), (9, 7),
+(11, 1),
+(12, 3),
+(13, 3), (13, 4),
+(15, 1), (15, 7),
+(16, 1),
+(17, 2),
+(18, 12),
+(19, 1),
+(20, 3),
 (21, 1), (21, 2),
 (22, 3),
 (23, 5),
@@ -378,10 +345,7 @@ INSERT INTO Gestion.DetalleCitaServicio (CitaID, ServicioID) VALUES
 (30, 12);
 GO
 
--- =============================================================================
--- PASO 5: FUNCIONES (Lógica de Negocio)
--- =============================================================================
-
+-- Funciones
 CREATE OR ALTER FUNCTION Gestion.fn_EsBarberoDisponible(@BarberoID INT, @FechaHora DATETIME)
 RETURNS BIT AS
 BEGIN
@@ -402,7 +366,6 @@ BEGIN
 END;
 GO
 
--- IMPORTANTE: Cálculo con JOIN (Lógica corregida)
 CREATE OR ALTER FUNCTION Gestion.fn_CalcularTotalConIVA(@CitaID INT)
 RETURNS DECIMAL(10,2) AS
 BEGIN
@@ -427,10 +390,7 @@ BEGIN
 END;
 GO
 
--- =============================================================================
--- PASO 6: TRIGGERS
--- =============================================================================
-
+-- Triggers
 CREATE OR ALTER TRIGGER Gestion.trg_ValidarDisponibilidadCita ON Gestion.Cita AFTER INSERT, UPDATE AS
 BEGIN
     SET NOCOUNT ON;
@@ -473,10 +433,7 @@ BEGIN
 END;
 GO
 
--- =============================================================================
--- PASO 7: PROCEDIMIENTOS ALMACENADOS (CRUD)
--- =============================================================================
-
+-- Procedimientos
 CREATE OR ALTER PROCEDURE Gestion.sp_CU_Ciudad @ID Gestion.D_ID = NULL, @Nombre Gestion.D_TextoCorto, @Accion CHAR(1) AS
 BEGIN
     IF @Accion = 'I' INSERT INTO Gestion.Ciudad (NombreCiudad) VALUES (@Nombre);
@@ -542,7 +499,6 @@ BEGIN
 END;
 GO
 
--- PROCEDIMIENTOS DE CITA (SIN PRECIOS MANUALES)
 CREATE OR ALTER PROCEDURE Gestion.sp_InsertarCita @FechaHora Gestion.D_FechaHora, @ClienteID Gestion.D_ID, @BarberoID Gestion.D_ID, @SedeID Gestion.D_ID AS
 BEGIN
     INSERT INTO Gestion.Cita (FechaHora, ClienteID, BarberoID, SedeID, Estado, Total) VALUES (@FechaHora, @ClienteID, @BarberoID, @SedeID, 'Pendiente', 0.00);
@@ -562,7 +518,6 @@ BEGIN
 END;
 GO
 
--- CORRECCION: Se agregó el Procedure faltante en la reconstrucción
 CREATE OR ALTER PROCEDURE Gestion.sp_ActualizarDetalleCita @DetalleServicioID Gestion.D_ID, @ServicioID Gestion.D_ID AS
 BEGIN
     UPDATE Gestion.DetalleCitaServicio SET ServicioID = @ServicioID WHERE DetalleServicioID = @DetalleServicioID;
@@ -594,11 +549,7 @@ BEGIN
 END;
 GO
 
--- =============================================================================
--- PASO 8: VISTAS (REPORTES)
--- =============================================================================
-
--- BLOQUE 1: ANALISIS FINANCIERO
+-- Vistas
 CREATE OR ALTER VIEW Gestion.v_ReporteRegaliasMensuales AS
 SELECT f.NombreCompleto AS "Franquiciado", COUNT(c.CitaID) AS "Citas Atendidas", SUM(c.Total) AS "Venta Bruta", f.PorcentajeRegalia AS "% Regalia", SUM(c.Total * f.PorcentajeRegalia / 100.0) AS "Total A Pagar"
 FROM Gestion.Cita c INNER JOIN Gestion.Sede s ON s.SedeID = c.SedeID INNER JOIN Gestion.Franquiciado f ON f.FranquiciadoID = s.FranquiciadoID
@@ -623,7 +574,6 @@ FROM Gestion.Sede s LEFT JOIN Gestion.Cita c ON s.SedeID = c.SedeID AND c.Estado
 GROUP BY s.NombreSede HAVING ISNULL(SUM(c.Total), 0) < 500;
 GO
 
--- BLOQUE 2: PRODUCTIVIDAD OPERATIVA
 CREATE OR ALTER VIEW Gestion.v_TopBarberosDelMes AS
 SELECT TOP 3 b.Nombres + ' ' + b.Apellidos AS "Barbero", SUM(c.Total) AS "Recaudado Este Mes"
 FROM Gestion.Barbero b INNER JOIN Gestion.Cita c ON b.BarberoID = c.BarberoID
@@ -647,7 +597,6 @@ CREATE OR ALTER VIEW Gestion.v_AntiguedadPersonal AS
 SELECT Nombres + ' ' + Apellidos AS "Personal", FechaRegistro, DATEDIFF(DAY, FechaRegistro, GETDATE()) AS "Dias Trabajando" FROM Gestion.Barbero;
 GO
 
--- BLOQUE 3: INTELIGENCIA DE CLIENTES
 CREATE OR ALTER VIEW Gestion.v_ClientesVIP AS
 SELECT TOP 100 PERCENT cli.Nombres + ' ' + cli.Apellidos AS "Cliente VIP", SUM(c.Total) AS "Gasto Total"
 FROM Gestion.Cliente cli INNER JOIN Gestion.Cita c ON cli.ClienteID = c.ClienteID WHERE c.Estado = 'Atendida'
@@ -669,7 +618,6 @@ CREATE OR ALTER VIEW Gestion.v_DistribucionDemografica AS
 SELECT CASE WHEN Sexo = 'M' THEN 'Masculino' ELSE 'Femenino' END AS "Genero", COUNT(*) AS "Cantidad Clientes" FROM Gestion.Cliente GROUP BY Sexo;
 GO
 
--- BLOQUE 4: ANALISIS DE SERVICIOS
 CREATE OR ALTER VIEW Gestion.v_RankingServiciosPopulares AS
 SELECT TOP 100 PERCENT s.NombreServicio, COUNT(d.DetalleServicioID) AS "Veces Vendido"
 FROM Gestion.Servicio s INNER JOIN Gestion.DetalleCitaServicio d ON s.ServicioID = d.ServicioID GROUP BY s.NombreServicio ORDER BY "Veces Vendido" DESC;
@@ -686,7 +634,6 @@ FROM Gestion.Cita c INNER JOIN Gestion.DetalleCitaServicio d ON c.CitaID = d.Cit
 GROUP BY c.CitaID, cli.Nombres HAVING COUNT(d.ServicioID) > 1;
 GO
 
--- BLOQUE 5: AUDITORIA Y CONTROL TEMPORAL
 CREATE OR ALTER VIEW Gestion.v_ResumenDiarioVentas AS
 SELECT CAST(FechaHora AS DATE) AS "Fecha", COUNT(CitaID) AS "Citas", SUM(Total) AS "Venta Dia"
 FROM Gestion.Cita WHERE Estado = 'Atendida' GROUP BY CAST(FechaHora AS DATE);
@@ -708,11 +655,10 @@ SELECT Estado AS "Motivo Perdida", COUNT(CitaID) AS "Cantidad", ISNULL(SUM(Total
 FROM Gestion.Cita WHERE Estado IN ('Cancelada', 'No Asistida') GROUP BY Estado;
 GO
 
--- CORRECCION: Ajuste lógico para reflejar que ya no hay Precio Cobrado manual
 CREATE OR ALTER VIEW Gestion.v_AuditoriaPrecios AS
 SELECT d.DetalleServicioID, s.NombreServicio, s.Precio AS [Precio Oficial], s.Precio AS [Precio Cobrado], 0.00 AS [Diferencia]
 FROM Gestion.DetalleCitaServicio d INNER JOIN Gestion.Servicio s ON d.ServicioID = s.ServicioID;
 GO
 
-PRINT '=== BASE DE DATOS RECONSTRUIDA, CORREGIDA Y VALIDADA EXITOSAMENTE ===';
+PRINT 'Base de datos creada';
 GO
